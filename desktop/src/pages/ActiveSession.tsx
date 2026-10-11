@@ -571,6 +571,7 @@ export function ActiveSession({ sessionId, active = true }: { sessionId?: string
       ? sessionState.historyError || t('session.historyLoadFailed')
       : null
   const visibleMessageCount = messages.length > 0 ? messages.length : session?.messageCount ?? 0
+  const headerTitle = session?.title || t('session.untitled')
   const currentGitInfo = sessionGitInfo?.sessionId === activeTabId ? sessionGitInfo.info : null
   const worktree = currentGitInfo?.worktree?.enabled ? currentGitInfo.worktree : null
   const worktreePath = worktree?.path || worktree?.plannedPath || null
@@ -777,6 +778,17 @@ export function ActiveSession({ sessionId, active = true }: { sessionId?: string
           ),
         }
       : null,
+    isActive
+      ? {
+          key: 'active',
+          content: (
+            <span className="flex shrink-0 items-center gap-1.5 text-[var(--color-text-secondary)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-info)] animate-pulse-dot" />
+              {t('session.active')}
+            </span>
+          ),
+        }
+      : null,
     worktreeName
       ? {
           key: 'worktree',
@@ -918,14 +930,13 @@ export function ActiveSession({ sessionId, active = true }: { sessionId?: string
             >
               <div className="flex max-w-[600px] flex-col items-center gap-2.5 text-center">
                 <BrandSeal size={compactEmptyHero ? 'md' : 'lg'} />
-                {/* h2: the window header holds the page's h1, the chat's title. */}
-                <h2
+                <h1
                   className={`mt-2 font-semibold leading-[1.3] tracking-tight text-[var(--color-text-primary)] ${compactEmptyHero ? 'text-[22px]' : 'text-[26px]'}`}
                 >
                   {emptyHeroProject
                     ? t('empty.heroTitle', { project: emptyHeroProject })
                     : t('empty.heroTitleNoProject')}
-                </h2>
+                </h1>
                 <p className="text-[14px] text-[var(--color-text-tertiary)]">
                   {t('empty.heroSubtitle')}
                 </p>
@@ -934,10 +945,8 @@ export function ActiveSession({ sessionId, active = true }: { sessionId?: string
           ) : (
             <>
               {!isMobileLayout && (
-                // Untitled: the window header names the session and shows
-                // whether it is running, so this bar keeps only what is
-                // about it — where it runs, its cost, its age.
                 <SessionChatHeader
+                  title={headerTitle}
                   compact={showRightPanel}
                   metadata={headerMetadata}
                   actions={<>

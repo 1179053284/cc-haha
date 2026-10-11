@@ -641,9 +641,7 @@ describe('ActiveSession task polling', () => {
     render(<ActiveSession />)
 
     const hero = screen.getByTestId('empty-session-hero')
-    // h2: the window header holds the page's one h1.
-    expect(within(hero).getByRole('heading', { level: 2 })).toHaveTextContent('project')
-    expect(within(hero).queryByRole('heading', { level: 1 })).toBeNull()
+    expect(within(hero).getByRole('heading', { level: 1 })).toHaveTextContent('project')
     // Only this project's threads with something in them, newest first; the
     // blank session itself is not "recent".
     const starter = screen.getByTestId('new-session-starter')
@@ -800,7 +798,7 @@ describe('ActiveSession task polling', () => {
 
     const indicator = await screen.findByTestId('session-worktree-indicator')
     expect(indicator).toHaveTextContent(worktreeName)
-    expect(within(screen.getByTestId('session-header-meta')).getByTestId('session-worktree-indicator')).toBe(indicator)
+    expect(screen.getByRole('heading', { name: 'Worktree Header Session' })).toBeInTheDocument()
     expect(within(screen.getByTestId('session-header')).queryByText(plannedPath)).not.toBeInTheDocument()
 
     fireEvent.focus(indicator)
@@ -813,6 +811,7 @@ describe('ActiveSession task polling', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('session-worktree-indicator')).not.toBeInTheDocument()
     })
+    expect(screen.getByRole('heading', { name: 'Regular Header Session' })).toBeInTheDocument()
   })
 
   it('shows a loading state for historical sessions while messages are loading', () => {
@@ -2218,7 +2217,7 @@ describe('ActiveSession task polling', () => {
     expect(screen.getByText('Finished smoke rerun')).toBeInTheDocument()
   })
 
-  it('leaves the running state of a background task to the window header, keeping the composer usable', () => {
+  it('keeps the session header active while a background task is still running after the turn completes', () => {
     const sessionId = 'background-shell-running-session'
 
     useSessionStore.setState({
@@ -2277,9 +2276,7 @@ describe('ActiveSession task polling', () => {
 
     render(<ActiveSession />)
 
-    // The window header draws running for the whole session; the bar below
-    // repeated it in words.
-    expect(screen.queryByText(/session active|会话活跃中/)).not.toBeInTheDocument()
+    expect(screen.getByText(/session active|会话活跃中/)).toBeInTheDocument()
     expect(screen.getByTestId('chat-input')).toHaveAttribute('data-variant', 'default')
   })
 
@@ -2703,7 +2700,7 @@ describe('ActiveSession task polling', () => {
     expect((useWorkspaceStore.getState().getTab(sessionId, terminalTabId) as {
       runtimeId: string
     }).runtimeId).toBe(runtimeId)
-    expect(useTabStore.getState().tabs.some((tab) => tab.sessionId.startsWith('__terminal__'))).toBe(false)
+    expect(useTabStore.getState().tabs.some((tab) => tab.type === 'terminal')).toBe(false)
   })
 
   it('keeps the docked terminal usable on a new empty session', () => {
@@ -2888,18 +2885,20 @@ describe('ActiveSession header', () => {
     })
   }
 
-  it('leaves the title to the window header, so it is never shown twice', () => {
+  it('keeps a long title on one truncated line and hovers the full text', () => {
     const sessionId = 'long-title-session'
     mountSessionWithLongTitle(sessionId)
 
     render(<ActiveSession />)
 
-    const header = screen.getByTestId('session-header')
-    expect(within(header).queryByRole('heading')).toBeNull()
-    expect(header).not.toHaveTextContent(longTitle)
+    const heading = within(screen.getByTestId('session-header')).getByRole('heading', { level: 1 })
+    expect(heading).toHaveTextContent(longTitle)
+    expect(heading).toHaveAttribute('title', longTitle)
+    expect(heading).toHaveClass('truncate')
+    expect(heading.className).not.toMatch(/text-\[22px\]/)
   })
 
-  it('gives the bar one line: the metadata, with the actions beside it', () => {
+  it('gives the metadata its own line under the title', () => {
     const sessionId = 'header-meta-session'
     mountSessionWithLongTitle(sessionId)
 
@@ -2910,14 +2909,15 @@ describe('ActiveSession header', () => {
       'main',
     )
     const header = screen.getByTestId('session-header')
-    const meta = within(header).getByTestId('session-header-meta')
+    const heading = within(header).getByRole('heading', { level: 1 })
+    const titleRow = heading.parentElement as HTMLElement
+    const meta = titleRow.nextElementSibling as HTMLElement
 
+    // 元数据挤在标题右侧时会离标题很远，读起来像飘在角落的另一块内容。
+    expect(within(titleRow).queryByText('2 messages')).not.toBeInTheDocument()
     expect(within(meta).getByText('2 messages')).toBeInTheDocument()
     expect(within(meta).getByText('15k API tokens')).toBeInTheDocument()
-    // One 28px line, not a title block: slimmer padding than a titled bar.
-    expect(meta).toHaveClass('min-h-7')
-    expect(header).toHaveClass('py-2')
-    expect(header).not.toHaveClass('py-3.5')
+    expect(header).toHaveClass('py-3.5')
   })
 
   it('leads the metadata with where the session runs: project folder, then branch', async () => {
@@ -2946,7 +2946,8 @@ describe('ActiveSession header', () => {
 
     render(<ActiveSession />)
 
-    const meta = screen.getByTestId('session-header-meta')
+    const heading = within(screen.getByTestId('session-header')).getByRole('heading', { level: 1 })
+    const meta = (heading.parentElement as HTMLElement).nextElementSibling as HTMLElement
 
     // 分隔符（3px 圆点）只出现在两项之间，开头不该有；它是纯装饰，读屏时不该被念出来。
     // 图标也带 aria-hidden，所以这里只数元数据行的直接子元素。

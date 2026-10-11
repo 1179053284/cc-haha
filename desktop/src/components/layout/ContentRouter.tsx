@@ -5,6 +5,7 @@ import { ActiveSession } from '../../pages/ActiveSession'
 import { ScheduledTasks } from '../../pages/ScheduledTasks'
 import { ExtensionMarket } from '@/pages/ExtensionMarket'
 import { Settings } from '../../pages/Settings'
+import { TerminalSettings } from '../../pages/TerminalSettings'
 import { SubagentRunPage, TeamMemberRunPage } from '../../pages/SubagentRunPage'
 import { AgentTeamsWorkbenchTab } from '../agentTeams/AgentTeamsWorkbenchTab'
 import { WorkspaceBrowserGuestLayer } from '../workbench/WorkspaceBrowserGuestLayer'
@@ -21,6 +22,7 @@ export function ContentRouter({ homePage }: ContentRouterProps = {}) {
   const activeTabId = useTabStore((s) => s.activeTabId)
   const tabs = useTabStore((s) => s.tabs)
   const activeTabType = tabs.find((t) => t.sessionId === activeTabId)?.type
+  const terminalTabs = tabs.filter((tab) => tab.type === 'terminal')
   const activeSessionId = activeTabType === 'session' ? activeTabId : null
   const [lastSessionId, setLastSessionId] = useState<string | null>(activeSessionId)
   const retainedSessionId = activeSessionId ?? (
@@ -85,9 +87,9 @@ export function ContentRouter({ homePage }: ContentRouterProps = {}) {
   } else if (activeTabType === 'team') {
     const teamTab = tabs.find((t) => t.sessionId === activeTabId)
     page = teamTab?.teamLeadSessionId
-      ? <AgentTeamsWorkbenchTab leadSessionId={teamTab.teamLeadSessionId} />
+      ? <AgentTeamsWorkbenchTab tabId={activeTabId} leadSessionId={teamTab.teamLeadSessionId} />
       : <EmptySession />
-  } else if (activeTabType !== 'session') {
+  } else if (activeTabType !== 'terminal' && activeTabType !== 'session') {
     page = <EmptySession />
   }
 
@@ -116,6 +118,29 @@ export function ContentRouter({ homePage }: ContentRouterProps = {}) {
           {page}
         </div>
       )}
+      {terminalTabs.map((tab) => {
+        const active = tab.sessionId === activeTabId
+        const visible = activeTabType === 'terminal' && active
+        return (
+          <div
+            key={tab.sessionId}
+            aria-hidden={!visible}
+            data-testid={`terminal-tab-panel-${tab.sessionId}`}
+            className={`absolute inset-0 flex min-h-0 flex-col overflow-hidden ${
+              visible ? 'z-20 opacity-100' : 'pointer-events-none z-0 opacity-0'
+            }`}
+          >
+            <TerminalSettings
+              active={active}
+              cwd={tab.terminalCwd}
+              runtimeId={tab.terminalRuntimeId ?? tab.sessionId}
+              workspace
+              testId={`terminal-host-${tab.sessionId}`}
+              onNewTerminal={() => useTabStore.getState().openTerminalTab(tab.terminalCwd)}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }

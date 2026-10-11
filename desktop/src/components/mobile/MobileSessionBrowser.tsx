@@ -30,7 +30,7 @@ import {
   listMobileProjectFilters,
 } from './mobileSessionGroups'
 import { useMobileSessionStatus } from './mobileSessionStatus'
-import { useLiveSessionActivity } from '@/hooks/useLiveSessionActivity'
+import { useLiveSessionActivity } from './useLiveSessionActivity'
 
 type Props = {
   /**
