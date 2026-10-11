@@ -94,15 +94,15 @@ function isCliStillWorking(session: PerSessionState): boolean {
  * was kept for is done. Kept: a pending prompt (the user's move; its
  * notification or the waiting list brings them back), a CLI still running
  * background work, and a team lead, whose socket carries every member's
- * approvals and team events. Temporary side chats also stay connected until
- * explicitly closed: their CLI context is not persisted, so reclaiming the
- * runtime would make the conversation impossible to resume.
+ * approvals and team events. Side chats are shown by their parent's workspace
+ * and released with it.
  *
  * Releasing never drops the transcript, draft or queued messages. Chats leave
  * the desktop's warm set on their own (`WARM_SESSION_LIMIT`), not because
  * someone closed them, so going back has to find the conversation where it
  * was. The chat store's history budget bounds the cached messages, and
  * `RELEASED_TRANSCRIPT_LIMIT` bounds how many released records are kept.
+ * A side chat is released with its parent and reconnects when shown again.
  */
 export function installHiddenSessionRelease(
   chatStore: Pick<StoreApi<HiddenSessionChatState>, 'getState' | 'subscribe'>,
@@ -138,7 +138,6 @@ export function installHiddenSessionRelease(
     const session = sessions[sessionId]
     if (
       !session ||
-      isSideChatSession(sessionId) ||
       isShown(sessionId, scope) ||
       !wsManager.getConnectedSessionIds().includes(sessionId) ||
       hasForegroundWork(session) ||
@@ -152,8 +151,7 @@ export function installHiddenSessionRelease(
     pruneReleased()
   }
 
-  // Recheck workspace sessions with their parent; the release guard keeps
-  // temporary side chats alive even when the parent is no longer shown.
+  // A parent leaving the screen takes its side chats with it.
   const scheduleWithSideChats = (sessionId: string) => {
     schedule(sessionId)
     for (const id in chatStore.getState().sessions) {
