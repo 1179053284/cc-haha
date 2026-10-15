@@ -1,7 +1,7 @@
 # cc-haha
 
 <p align="center">
-  <img src="docs/images/readme-cover-en.jpg" alt="cc-haha — Open-source desktop for Claude Code" width="960">
+  <img src="docs/images/readme-cover-en.jpg" alt="cc-haha — Source-available desktop for Claude Code" width="960">
 </p>
 
 <div align="center">
@@ -10,7 +10,7 @@
 [![GitHub Forks](https://img.shields.io/github/forks/NanmiCoder/cc-haha?style=social)](https://github.com/NanmiCoder/cc-haha/network/members)
 [![GitHub Issues](https://img.shields.io/github/issues/NanmiCoder/cc-haha)](https://github.com/NanmiCoder/cc-haha/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/NanmiCoder/cc-haha)](https://github.com/NanmiCoder/cc-haha/pulls)
-[![License](https://img.shields.io/badge/License-MIT-blue)](https://github.com/NanmiCoder/cc-haha/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/License-Community_Source-orange)](https://github.com/NanmiCoder/cc-haha/blob/main/LICENSE)
 [![English](https://img.shields.io/badge/🇺🇸_English-Current-blue)](README.en.md)
 [![中文](https://img.shields.io/badge/🇨🇳_简体中文-Available-green)](README.md)
 [![Docs](https://img.shields.io/badge/📖_Documentation-Visit-FF7A00)](https://cchaha.ai)
@@ -214,3 +214,9 @@ If this project helps you, please support it with a ⭐ Star so more people can 
 <a href="https://www.repostars.dev/?repos=NanmiCoder%2Fcc-haha&theme=ocean">
   <img alt="Star History Chart" src="https://www.repostars.dev/api/embed?repo=NanmiCoder%2Fcc-haha&theme=ocean" />
 </a>
+
+---
+
+## License
+
+Current terms are the [cc-haha Community Source License 1.0](LICENSE). Noncommercial personal use and internal business operations are allowed; paid client work, commercial deliverables, paid customization or secondary development, commercial distribution, and paid services require prior written commercial permission; redistributions require visible source attribution. Existing MIT grants and third-party licenses remain valid. See the [licensing guide](LICENSING.md). This is source-available, not an OSI-approved open-source license.
